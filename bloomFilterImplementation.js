@@ -31,4 +31,3 @@ function checkBloom(item) {
 // Test with a random item from the file
 const testItem = largeTextFile[Math.floor(Math.random() * largeTextFile.length)];
 console.log('Bloom Filter result:', checkBloom(testItem));
-

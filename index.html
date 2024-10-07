@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Gmail</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: background-color 0.3s ease;
+    }
+
+    .login-container {
+      width: 350px;
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .login-container h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      color: white;
+      background-color: #1a73e8;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #155bb5;
+    }
+
+    .dark-mode {
+      background-color: #333;
+      color: white;
+    }
+
+    .dark-mode .login-container {
+      background-color: #444;
+      color: white;
+    }
+
+    .dark-mode input {
+      background-color: #555;
+      color: white;
+      border: 1px solid #666;
+    }
+
+    .toggle-dark-mode {
+      margin-top: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #1a73e8;
+    }
+
+    .toggle-dark-mode:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Login</h1>
+    <input type="email" id="email" placeholder="Enter email" />
+    <button onclick="login()">Login</button>
+    <div class="message" id="message"></div>
+    <div class="toggle-dark-mode" onclick="toggleDarkMode()">Toggle Dark Mode</div>
+  </div>
+
+  <script>
+    let darkMode = false;
+    let bloomFilter = new Array(10000).fill(0);  // Bloom filter of size 1000 (can increase as needed)
+
+    // Hash functions for the bloom filter
+    function hash1(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash + str.charCodeAt(i) * i) % bloomFilter.length;
+      }
+      return hash;
+    }
+
+    function hash2(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash + str.charCodeAt(i) * (i + 1)) % bloomFilter.length;
+      }
+      return hash;
+    }
+
+    function hash3(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash + str.charCodeAt(i) * (i + 2)) % bloomFilter.length;
+      }
+      return hash;
+    }
+
+    // Function to check if email already exists
+    function checkEmail(email) {
+      const h1 = hash1(email);
+      const h2 = hash2(email);
+      const h3 = hash3(email);
+
+      // If all bits for hash locations are set, then the email likely exists
+      return bloomFilter[h1] === 1 && bloomFilter[h2] === 1 && bloomFilter[h3] === 1;
+    }
+
+    // Function to add email to the bloom filter
+    function addEmail(email) {
+      const h1 = hash1(email);
+      const h2 = hash2(email);
+      const h3 = hash3(email);
+
+      bloomFilter[h1] = 1;
+      bloomFilter[h2] = 1;
+      bloomFilter[h3] = 1;
+    }
+
+    function login() {
+      const email = document.getElementById('email').value;
+      const messageEl = document.getElementById('message');
+      const now = new Date().toLocaleString();
+
+      // Measure time for checking email
+      const checkStart = performance.now();
+      const emailExists = checkEmail(email);
+      const checkEnd = performance.now();
+      const checkTime = (checkEnd - checkStart).toFixed(2);
+
+      if (emailExists) {
+        messageEl.innerHTML = `This email is already taken! <br> Timestamp: ${now} <br> Search Time: ${checkTime} ms`;
+        messageEl.style.color = "red";
+      } else {
+        // Measure time for adding email
+        const addStart = performance.now();
+        addEmail(email);
+        const addEnd = performance.now();
+        const addTime = (addEnd - addStart).toFixed(2);
+
+        messageEl.innerHTML = `Email registered successfully! <br> Timestamp: ${now} <br> Search Time: ${checkTime} ms <br> Add Time: ${addTime} ms`;
+        messageEl.style.color = "green";
+      }
+    }
+
+    // Function to toggle dark mode
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+    }
+  </script>
+</body>
+</html>
